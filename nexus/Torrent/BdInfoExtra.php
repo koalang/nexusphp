@@ -618,9 +618,11 @@ class BdInfoExtra
         $hdrTypes = [];
         $bitDepths = [];
         $nits = [];
-        
-        foreach ($this->bdInfoArr['video'] as $video) {
-            $description = $video['description'] ?? '';
+
+        // 检查是否为summary格式（关联数组）还是normal格式（数字索引数组）
+        if (isset($this->bdInfoArr['video']['description'])) {
+            // Summary格式 - 直接访问description
+            $description = $this->bdInfoArr['video']['description'];
             
             // 从VIDEO描述中提取HDR格式
             if (preg_match('/\b(HDR10\+|HDR10|HDR|HLG|Dolby Vision)(?:\s|\/|$)/i', $description, $matches)) {
@@ -635,6 +637,26 @@ class BdInfoExtra
             // 检查亮度
             if (preg_match('/(\d+)nits/', $description, $matches)) {
                 $nits[] = $matches[1] . 'nits';
+            }
+        } else {
+            // Normal格式 - 遍历数字索引数组
+            foreach ($this->bdInfoArr['video'] as $video) {
+                $description = $video['description'] ?? '';
+                
+                // 从VIDEO描述中提取HDR格式
+                if (preg_match('/\b(HDR10\+|HDR10|HDR|HLG|Dolby Vision)(?:\s|\/|$)/i', $description, $matches)) {
+                    $hdrTypes[] = $matches[1];
+                }
+                
+                // 检查比特深度
+                if (preg_match('/(\d+)\s+bits/', $description, $matches)) {
+                    $bitDepths[] = $matches[1] . ' bits';
+                }
+                
+                // 检查亮度
+                if (preg_match('/(\d+)nits/', $description, $matches)) {
+                    $nits[] = $matches[1] . 'nits';
+                }
             }
         }
         
